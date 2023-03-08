@@ -124,15 +124,9 @@ resize();
 
 async function redraw() {
     // get points
-    let positions = [];
+    let positions = [0.5, 0.5, 0.5, 0.5];
     // whole canvas
     let screen = [-1, -1, 1, -1, -1, 1, 1, 1];
-
-    for (let i = 0; i < 20; i++) {
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height;
-        positions.push(x, y);
-    }
 
     //#region create VBOs
     const positionBuffer = gl.createBuffer();
@@ -152,8 +146,9 @@ async function redraw() {
     const mouseLocation = gl.getUniformLocation(program, "mouse");
     gl.uniform2f(mouseLocation, cursor.x / canvas.width * sc, 1 - cursor.y / canvas.height * sc);
     //spline precision
+    const splineprecision = document.getElementById('splineprecision').value;
     const hsvLocation = gl.getUniformLocation(program, "splineprecision");
-    gl.uniform1f(hsvLocation, 100);
+    gl.uniform1f(hsvLocation, splineprecision);
     //time ticks for animation in shader
     const timeLocation = gl.getUniformLocation(program, "time");
     gl.uniform1f(timeLocation, Date.now() / 1000);
@@ -179,15 +174,6 @@ async function redraw() {
 }
 
 initShader().then(() => requestAnimationFrame(redraw));
-
-
-
-function getColorAt(x, y) {
-    const pixel = new Uint8Array(16);
-    gl.readPixels(x * sc, canvas.height - y * sc, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-    //pixel[3] = 1;
-    return pixel;
-}
 
 
 

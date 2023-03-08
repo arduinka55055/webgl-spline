@@ -18,12 +18,25 @@
             width: 60%;
             aspect-ratio: 1;
         }
+        
+        .inputgrp {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            width: 60%;
+        }
     </style>
 
 </head>
 
 <body><canvas id="canvas"></canvas>
     <script src="index.js"></script>
+    <span class="inputgrp">
+        <input type="range" min="0" max="100" value="50" class="slider" id="splineprecision">
+        <label>Spline Points count</label>
+    </span>
 </body>
 
 </html>
