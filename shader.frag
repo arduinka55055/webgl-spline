@@ -58,12 +58,13 @@ void drawline(vec2 uv, vec2 p0, vec2 p1) {
     float pixel = 1.0 / resolution.x;
     vec2 delta = uv - p0;
     vec2 delta2 = p1 - p0;
-    float R = abs(delta.x * delta2.y - delta.y * delta2.x) / length(delta2);
-    bool linebetween = (uv.x > p0.x && uv.x < p1.x) || (uv.x < p0.x && uv.x > p1.x);
-    linebetween = linebetween && (uv.y > p0.y && uv.y < p1.y) || (uv.y < p0.y && uv.y > p1.y);
-    if (R < pixel*5.0 && linebetween)
-        fragColor = ablend(vec4(0, 0, 0, 1.0-R*200.0),fragColor);
-
+    float dotprod = dot(delta, delta2);
+    float seglen = dot(delta2, delta2);
+    if (dotprod > 0.0 && dotprod < seglen) {
+        float R = abs(delta.x * delta2.y - delta.y * delta2.x) / length(delta2);
+        if (R < pixel*5.0)
+            fragColor = ablend(vec4(0, 0, 0, 1.0-R*200.0),fragColor);
+    }
 }
 
 void hermite(vec2 p0, vec2 p1, vec2 m0, vec2 m1, float t, out vec2 pos, out vec2 tan) {

@@ -37,6 +37,25 @@
         <input type="range" min="0" max="100" value="50" class="slider" id="splineprecision">
         <label>Spline Points count</label>
     </span>
+    <span class="en">
+        Hermite spline demo. Use the slider to change the number of points used to draw the spline.<br>
+        The canvas is interactive. Click and drag to move the control points.
+        circles represent the control points, and the squares represent the tangents.
+    </span>
+    <span class="uk">
+        Демонстрація гермітової сплайн-кривої. Використовуйте слайдер, щоб змінити кількість точок, <br>
+        які використовуються для малювання сплайн-кривої.<br>
+        Холст інтерактивний. Натисніть і потягніть, щоб перемістити контрольні точки.<br>
+        Кола відображають контрольні точки, а квадрати - тангенси.
+    </span>
+    <script>
+        var lang = navigator.language || navigator.userLanguage;
+        if (lang == "uk-UA" || lang == "ru-RU") {
+            document.querySelector(".en").style.display = "none";
+        } else {
+            document.querySelector(".uk").style.display = "none";
+        }
+    </script>
 </body>
 
 </html>
