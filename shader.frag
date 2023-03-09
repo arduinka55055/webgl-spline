@@ -4,7 +4,13 @@ uniform vec2 resolution;
 uniform vec2 mouse;
 uniform float time;
 uniform float splineprecision;//amount of points to draw spline
-in vec2 test;
+//actual spline points
+uniform vec2 p0;
+uniform vec2 p1;
+uniform vec2 m0;
+uniform vec2 m1;
+uniform int mouseover;
+
 out vec4 fragColor;
 const float PI = 3.1415926535897932384626433832795;
 
@@ -25,22 +31,27 @@ vec4 ablend(vec4 a, vec4 b) {
     return vec4(a.rgb + b.rgb * (1.0 - a.a), a.a + b.a * (1.0 - a.a));
 }
 
-void drawcircle(vec2 uv, vec2 pos) {
+void drawcircle(vec2 uv, vec2 pos, bool selected) {
     float pixel = 1.0 / resolution.x;
     vec2 delta = uv - pos;
     float R = length(delta);
+    vec3 color = vec3(0, 0, 0);
+    if (selected == true) color = vec3(1, 0, 0);
 
     if (R < pixel*15.0 && R > pixel*8.0)
-        fragColor = ablend(vec4(0, 0, 0, 1.0-R*70.0),fragColor);
+        fragColor = ablend(vec4(color, 1.0-R*70.0),fragColor);
 }
 
-void drawsquare(vec2 uv, vec2 pos) {
+void drawsquare(vec2 uv, vec2 pos, bool selected) {
     float pixel = 1.0 / resolution.x;
     vec2 delta = uv - pos;
     bool R = abs(delta.x) < pixel*15.0 && abs(delta.y) < pixel*15.0;
     R = R && !(abs(delta.x) < pixel*8.0 && abs(delta.y) < pixel*8.0);
+
+    vec3 color = vec3(0, 0, 0);
+    if (selected == true) color = vec3(1, 0, 0);
     if (R == true)
-        fragColor = vec4(1.0, 0, 0, 1.0);
+        fragColor = vec4(color, 1.0);
 }
 
 void drawline(vec2 uv, vec2 p0, vec2 p1) {
@@ -48,7 +59,9 @@ void drawline(vec2 uv, vec2 p0, vec2 p1) {
     vec2 delta = uv - p0;
     vec2 delta2 = p1 - p0;
     float R = abs(delta.x * delta2.y - delta.y * delta2.x) / length(delta2);
-    if (R < pixel*5.0)
+    bool linebetween = (uv.x > p0.x && uv.x < p1.x) || (uv.x < p0.x && uv.x > p1.x);
+    linebetween = linebetween && (uv.y > p0.y && uv.y < p1.y) || (uv.y < p0.y && uv.y > p1.y);
+    if (R < pixel*5.0 && linebetween)
         fragColor = ablend(vec4(0, 0, 0, 1.0-R*200.0),fragColor);
 
 }
@@ -80,28 +93,24 @@ void main(){
     //gl_FragColor = vec4(0,0,0,1.0);
     //mouse circle
     
-    drawcircle(uv, mouse);
+    drawcircle(uv, mouse, false);
     
 
     //spline
-    vec2 p0 = vec2(0.1, 0.5);
-    vec2 p1 = vec2(0.8, 0.2);
-    vec2 m0 = vec2(0.2, 0.8);
-    vec2 m1 = vec2(0.8, 0.4);
     vec2 pos;
     vec2 tan;
     float t = 0.0;
     float step = 1.0 / splineprecision;
     //display point and tangent
-    drawcircle(uv, p0);
-    drawcircle(uv, p1);
-    drawsquare(uv, m0);
-    drawsquare(uv, m1);
+    drawcircle(uv, p0, mouseover==1);
+    drawcircle(uv, p1, mouseover==2);
+    drawsquare(uv, m0, mouseover==3);
+    drawsquare(uv, m1, mouseover==4);
     drawline(uv, p0, m0);
     drawline(uv, p1, m1);
     for (float i = 0.0; i < splineprecision; i+=1.0) {
         hermite(p0, p1, m0, m1, t, pos, tan);
-        drawcircle(uv, pos);
+        drawcircle(uv, pos, false);
         t += step;
     }
     

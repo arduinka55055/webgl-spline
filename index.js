@@ -1,4 +1,8 @@
+// License: MIT 
+// Author: Denys Vitiaz (arduinka55055 || sudohub team)
+
 // @ts-ignore: Object is possibly 'null'.
+// @ts-ignore: Type 'null' is not assignable to type
 
 /**
     @type HTMLCanvasElement 
@@ -8,12 +12,13 @@ let canvas = document.querySelector("#canvas");
     @type WebGLRenderingContext 
 */
 let gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
+/**
+    @type WebGLProgram
+*/
 const program = gl.createProgram();
 const sc = 2;
 let cursor = { x: 0, y: 0 };
-let chosenColor = [0, 0, 0, 0];
 
-let pointSelected = null;
 class Point {
     constructor(x, y) {
         this.x = x;
@@ -21,51 +26,85 @@ class Point {
     }
 }
 
-class HermitePoint extends Point {
-    constructor(x, y, dx, dy) {
-        super(x, y);
-        this.dx = dx;
-        this.dy = dy;
-    }
-}
+class HermiteSpline {
 
-class HermiteSpline extends Array {
-    radius = 0.05;
     constructor() {
-        super();
+        this.pointSelected = null;
+        this.radius = 0.05;
+        this.p0 = new Point(0.1, 0.5);
+        this.p1 = new Point(0.8, 0.2);
+        this.m0 = new Point(0.2, 0.8);
+        this.m1 = new Point(0.65, 0.4);
     }
     getIntersection(x, y) {
-        for (let i = 0; i < this.length; i++) {
-            const p = this[i];
-            if (Math.hypot(p.x - x, p.y - y) < this.radius) {
-                return p;
+        const candidates = [
+            this.p0,
+            this.p1,
+            this.m0,
+            this.m1
+        ];
+        let nearest = Infinity;
+        let nearestPoint = null;
+        //pick nearest point using pythagoras
+        for (let i = 0; i < candidates.length; i++) {
+            const p = candidates[i];
+            const dist = Math.hypot(p.x - x, p.y - y);
+            if (dist < this.radius && dist < nearest) {
+                nearest = dist;
+                nearestPoint = p;
             }
         }
-        return null;
+        return nearestPoint;
     }
-    click(x, y, button) {
-        let p = this.getIntersection(x, y);
-        if (button == 0) {
-            if (p == null) {
-                //create new point
-                p = new HermitePoint(x, y, 0, 0);
-                this.push(p);
+    click(x, y, drag, click) {
+        x /= canvas.width;
+        y /= canvas.height;
+        //convert to [-1,1] and flip y
+        x = x * 2;
+        y = 1 - y * 2;
+        let p = this.pointSelected;
+        //if we click - select point
+        if (click) {
+            let p = this.getIntersection(x, y);
+            this.pointSelected = p;
+        }
+        //if we drag - move point
+        if (p) {
+            console.log("click");
+            if (drag) {
+                p.x = x;
+                p.y = y;
             }
-            //select point
-            pointSelected = p;
-        } else {
-            //delete point
-            if (p != null) {
-                this.splice(this.indexOf(p), 1);
+            if (!drag) {
+                this.pointSelected = null;
             }
         }
+    }
+    setUniforms() {
+        const candidates = [
+            this.p0,
+            this.p1,
+            this.m0,
+            this.m1
+        ];
+        const p0Location = gl.getUniformLocation(program, "p0");
+        gl.uniform2f(p0Location, this.p0.x, this.p0.y);
+        const p1Location = gl.getUniformLocation(program, "p1");
+        gl.uniform2f(p1Location, this.p1.x, this.p1.y);
+        const m0Location = gl.getUniformLocation(program, "m0");
+        gl.uniform2f(m0Location, this.m0.x, this.m0.y);
+        const m1Location = gl.getUniformLocation(program, "m1");
+        gl.uniform2f(m1Location, this.m1.x, this.m1.y);
+        //is mouse over point
+        const mouseover = gl.getUniformLocation(program, "mouseover");
+        //get selected point index
+        console.log(candidates.indexOf(this.pointSelected) + 1);
+        gl.uniform1i(mouseover, candidates.indexOf(this.pointSelected) + 1);
     }
 
 }
 
 let hermiteSpline = new HermiteSpline();
-hermiteSpline.push(new HermitePoint(0, 0, 0, 0));
-hermiteSpline.push(new HermitePoint(1, 1, 0, 0));
 
 async function initShader() {
     const fshader = await fetch('shader.frag').then(response => response.text());
@@ -142,13 +181,15 @@ async function redraw() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     //#region uniforms
+    //hermite spline uniforms
+    hermiteSpline.setUniforms();
     //mouse position
     const mouseLocation = gl.getUniformLocation(program, "mouse");
     gl.uniform2f(mouseLocation, cursor.x / canvas.width * sc, 1 - cursor.y / canvas.height * sc);
     //spline precision
     const splineprecision = document.getElementById('splineprecision').value;
-    const hsvLocation = gl.getUniformLocation(program, "splineprecision");
-    gl.uniform1f(hsvLocation, splineprecision);
+    const precisionLocation = gl.getUniformLocation(program, "splineprecision");
+    gl.uniform1f(precisionLocation, splineprecision);
     //time ticks for animation in shader
     const timeLocation = gl.getUniformLocation(program, "time");
     gl.uniform1f(timeLocation, Date.now() / 1000);
@@ -180,14 +221,13 @@ initShader().then(() => requestAnimationFrame(redraw));
 canvas.addEventListener('mousemove', (e) => {
     cursor.x = e.offsetX;
     cursor.y = e.offsetY;
+    hermiteSpline.click(cursor.x, cursor.y, e.buttons == 1);
 });
 canvas.addEventListener('mousedown', (e) => {
     if (e.buttons == 1) {
         cursor.x = e.offsetX;
         cursor.y = e.offsetY;
-        requestAnimationFrame(() => {
-            redraw();
-        });
+        hermiteSpline.click(cursor.x, cursor.y, e.buttons == 1, true);
     }
 });
 let touchlistener = (e) => {
