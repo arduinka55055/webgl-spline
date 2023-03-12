@@ -140,8 +140,9 @@ async function initShader() {
     //enable anti aliasing
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    //render all canvas, not limited by vertices
-
+    //enable anti aliasing
+    gl.enable(gl.LINE_SMOOTH);
+    gl.lineWidth(2);
 
     return program;
 }

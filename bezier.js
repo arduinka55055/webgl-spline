@@ -56,9 +56,20 @@ class BezierSpline extends Array {
         y = 1 - y * 2;
         let p = this.pointSelected;
         //if we click - select point
-        if (click) {
+        if (click == 1) {
             let p = this.getIntersection(x, y);
+            if (p == null) {
+                p = new Point(x, y);
+                this.push(p);
+            }
             this.pointSelected = p;
+        }
+        if (click == 2) {
+            //right click
+            let p = this.getIntersection(x, y);
+            if (p != null) {
+                this.splice(this.indexOf(p), 1);
+            }
         }
         //if we drag - move point
         if (p) {
@@ -90,9 +101,10 @@ class BezierSpline extends Array {
 }
 
 let spline = new BezierSpline();
-spline.push(new Point(0.2, 0.2));
-spline.push(new Point(0.5, 0.5));
-spline.push(new Point(0.3, 0.3));
+spline.push(new Point(0.7, 0.4));
+spline.push(new Point(0.5, 0.7));
+spline.push(new Point(0.3, 0.4));
+spline.push(new Point(0.1, 0.7));
 
 async function initShader() {
     const fshader = await fetch('bezier.frag').then(response => response.text());
@@ -133,7 +145,8 @@ async function initShader() {
     //enable anti aliasing
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    //render all canvas, not limited by vertices
+    //enable anti aliasing
+
 
 
     return program;
@@ -163,16 +176,7 @@ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(screenbuf), gl.STATIC_DRAW);
 
 async function redraw() {
     // get points
-    let positions = //spline.getPoints();
-        [
-            0.5, 0.5,
-            0.6, 0.6,
-            0.7, 0.7,
-            0.8, 0.8,
-            0.9, 0.9,
-            1.0, 1.0,
-
-        ];
+    let positions = spline.getPoints();
     // fill points buffer
     const blockSize = gl.getActiveUniformBlockParameter(program, 0, gl.UNIFORM_BLOCK_DATA_SIZE);
     gl.bindBuffer(gl.UNIFORM_BUFFER, pointsBuffer);
@@ -224,10 +228,10 @@ canvas.addEventListener('mousemove', (e) => {
     spline.click(cursor.x, cursor.y, e.buttons == 1);
 });
 canvas.addEventListener('mousedown', (e) => {
-    if (e.buttons == 1) {
+    if (e.buttons >= 1) {
         cursor.x = e.offsetX;
         cursor.y = e.offsetY;
-        spline.click(cursor.x, cursor.y, e.buttons == 1, true);
+        spline.click(cursor.x, cursor.y, e.buttons == 1, e.buttons);
     }
 });
 let touchlistener = (e) => {
@@ -240,4 +244,6 @@ let touchlistener = (e) => {
 canvas.addEventListener('touchstart', touchlistener);
 canvas.addEventListener('touchmove', touchlistener);
 canvas.addEventListener('touchend', touchlistener);
+//remove context menu on right click
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 //#endregion events

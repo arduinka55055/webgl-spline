@@ -58,26 +58,29 @@ void drawline(vec2 uv, vec2 p0, vec2 p1) {
     float pixel = 1.0 / resolution.x;
     vec2 delta = uv - p0;
     vec2 delta2 = p1 - p0;
+    //join lines
+    delta += .4 * pixel * normalize(delta2);
+    delta2 += .4 * pixel * normalize(delta2);
+
     float dotprod = dot(delta, delta2);
     float seglen = dot(delta2, delta2);
-    if (dotprod > 0.0 && dotprod < seglen) {
+    if (dotprod >= 0.0 && dotprod <= seglen) {
         float R = abs(delta.x * delta2.y - delta.y * delta2.x) / length(delta2);
+        float a = abs(R / pixel);
         if (R < pixel*5.0)
-            fragColor = ablend(vec4(0, 0, 0, 1.0-R*200.0),fragColor);
+            fragColor = mix(vec4(0, 0, 0, 1.0),fragColor, a*.2);
     }
 }
 
-void hermite(vec2 p0, vec2 p1, vec2 m0, vec2 m1, float t, out vec2 pos, out vec2 tan) {
+vec2 hermite(vec2 p0, vec2 p1, vec2 m0, vec2 m1, float t) {
     float t2 = t * t;
     float t3 = t2 * t;
     float h1 = 2.0 * t3 - 3.0 * t2 + 1.0;
     float h2 = -2.0 * t3 + 3.0 * t2;
     float h3 = t3 - 2.0 * t2 + t;
     float h4 = t3 - t2;
-    pos = h1 * p0 + h2 * p1 + h3 * m0 + h4 * m1;
-    tan = (3.0 * h1 - 2.0 * h3) * p0 + (3.0 * h2 - 2.0 * h4) * p1 + (h3 - h1) * m0 + (h4 - h2) * m1;
+    return h1 * p0 + h2 * p1 + h3 * m0 + h4 * m1;
 }
-
 
 
 void main(){
@@ -97,11 +100,6 @@ void main(){
     drawcircle(uv, mouse, false);
     
 
-    //spline
-    vec2 pos;
-    vec2 tan;
-    float t = 0.0;
-    float step = 1.0 / splineprecision;
     //display point and tangent
     drawcircle(uv, p0, mouseover==1);
     drawcircle(uv, p1, mouseover==2);
@@ -109,10 +107,15 @@ void main(){
     drawsquare(uv, m1, mouseover==4);
     drawline(uv, p0, m0);
     drawline(uv, p1, m1);
-    for (float i = 0.0; i < splineprecision; i+=1.0) {
-        hermite(p0, p1, m0, m1, t, pos, tan);
-        drawcircle(uv, pos, false);
-        t += step;
+
+    float t;
+    vec2 prev = p0;
+    for (float i = 0.0; i <= 200.0; i+=1.0) {
+        if(i > splineprecision) break;
+        t = i / splineprecision;
+        vec2 pos = hermite(p0, p1, m0, m1, t);
+        drawline(uv, prev, pos);
+        prev = pos;
     }
     
 }
