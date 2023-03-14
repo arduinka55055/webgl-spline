@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>B-Spline demo</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            width: 60%;
+            aspect-ratio: 1;
+        }
+        
+        .inputgrp {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            width: 60%;
+        }
+    </style>
+
+</head>
+
+<body><canvas id="canvas"></canvas>
+    <script src="bspline.js"></script>
+    <span class="inputgrp">
+        <input type="range" min="0" max="100" value="50" class="slider" id="splineprecision">
+        <label>Spline Points count</label>
+    </span>
+    <span class="en">
+        B-Spline demo. Drag the points to change the curve. Left click to add a point. Right click to remove a point.
+        If you add more than 4 points, the curve will automatically adjust.
+        The slider controls the number of points on the spline(precision/smoothness).
+    </span>
+    <span class="uk">
+        Демонстрація B-Сплайнів. Перетягніть точки, щоб змінити криву. Лівий клік додає точку. Правий клік видаляє точку.
+        Якщо ви додасте більше 4 точок, крива автоматично оновиться.
+        Слайдер контролює кількість точок на сплайні(точність/гладкість).
+    </span>
+    <script>
+        var lang = navigator.language || navigator.userLanguage;
+        if (lang == "uk-UA" || lang == "ru-RU") {
+            document.querySelector(".en").style.display = "none";
+        } else {
+            document.querySelector(".uk").style.display = "none";
+        }
+    </script>
+</body>
+
+</html>
