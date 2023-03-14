@@ -1,7 +1,5 @@
 # version 300 es
 #define MAX_POINTS 32
-#define POINTS_XY(index) points[(index)/2].xy
-#define POINTS_ZW(index) points[(index)/2].zw
 precision mediump float;
 
 layout(std140) uniform Points {
@@ -125,22 +123,5 @@ void main(){
         drawline(uv, prev, point, vec3(0,0,0));
         prev = point;
     }
-    //draw b spline
-    for(int i=0;i<MAX_POINTS;i+=3){
-        //no more points
-        if(i+3>=count) break;
-
-        vec2 p0 = getPoint(i);
-        vec2 p1 = getPoint(i+1);
-        vec2 p2 = getPoint(i+2);
-        vec2 p3 = getPoint(i+3);
-
-        vec2 prev = p0;
-        float s = 1.0/splineprecision;
-        for(float t=0.0;t<=float(count)-2.0;t+=s){ // start from the second knot value
-            vec2 point = bspline(p0, p1, p2, p3, t); // evaluate the B-spline using De Boor's algorithm
-            drawline(uv, prev, point, vec3(0,0,0));
-            prev = point;
-        }
-    }
+    
 }
