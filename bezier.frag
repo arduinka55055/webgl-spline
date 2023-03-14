@@ -122,7 +122,7 @@ void main(){
 
         vec2 point = getPoint(i);
         drawcircle(uv, point, i==i);
-        drawline(uv, prev, point, vec3(0,0,0));
+        drawline(uv, prev, point, vec3(0.7,0.7,0.7));
         prev = point;
     }
     //draw bezier curve
@@ -140,7 +140,7 @@ void main(){
         for(float t=s;t<=1.0;t+=s){
             vec2 pos;
             bezier(p0, p1, p2, p3, t, pos);
-            drawline(uv, prev, pos, vec3(0.5,0.5,0.5));
+            drawline(uv, prev, pos, vec3(0.9,0.0,0.0));
             prev = pos;
         }
     }

@@ -28,8 +28,8 @@ class Point {
 
 class BezierSpline extends Array {
 
-    constructor(a) {
-        super(a);
+    constructor() {
+        super();
         this.pointSelected = null;
         this.radius = 0.05;
     }
@@ -101,12 +101,8 @@ class BezierSpline extends Array {
 }
 
 let spline = new BezierSpline();
-spline.push(new Point(0.7, 0.4));
-spline.push(new Point(0.5, 0.7));
-spline.push(new Point(0.3, 0.4));
-spline.push(new Point(0.1, 0.7));
 
-let flower = new BezierSpline([
+let flower = [
     new Point(0.3871, 0.1353),
     new Point(0.3333, 0.1688),
     new Point(0.4264, 0.3755),
@@ -129,11 +125,16 @@ let flower = new BezierSpline([
     new Point(0.8427, 0.4483),
     new Point(0.8340, 0.3114),
     new Point(0.7510, 0.2576),
+    new Point(0.7510, 0.2576),
+    new Point(0.5496, 0.4013),
     new Point(0.5196, 0.3813),
     new Point(0.5065, 0.1280),
+    new Point(0.3901, 0.1368),
     new Point(0.3901, 0.1368)
-]);
-spline = flower;
+];
+for (let p of flower)
+    spline.push(p);
+
 async function initShader() {
     const fshader = await fetch('bezier.frag').then(response => response.text());
     const vshader = await fetch('shader.vert').then(response => response.text());
