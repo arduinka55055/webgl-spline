@@ -28,8 +28,8 @@ class Point {
 
 class BezierSpline extends Array {
 
-    constructor() {
-        super();
+    constructor(a) {
+        super(a);
         this.pointSelected = null;
         this.radius = 0.05;
     }
