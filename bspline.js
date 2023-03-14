@@ -26,6 +26,19 @@ camera.position.y = 0.5;
 camera.position.x = 0.5;
 const cursor = new THREE.Vector2(0, 0);
 
+const resolution = new THREE.Vector2(window.innerWidth, window.innerHeight);
+//background, i love rainbows
+const bgplane = new THREE.Mesh(
+    new THREE.PlaneGeometry(20, 20),
+    new THREE.ShaderMaterial({
+        uniforms: {
+            resolution: { value: resolution },
+        },
+        fragmentShader: document.getElementById('fragmentShader').textContent
+    })
+);
+scene.add(bgplane);
+bgplane.position.z = 0;
 
 class BSpline extends Array {
 
@@ -152,8 +165,10 @@ animate();
 
 
 function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    resolution.x = window.innerWidth;
+    resolution.y = window.innerHeight;
+    canvas.width = window.innerWidth * 0.8;
+    canvas.height = window.innerHeight * 0.8;
     camera.aspect = canvas.width / canvas.height;
     camera.updateProjectionMatrix();
     renderer.setSize(canvas.width, canvas.height);

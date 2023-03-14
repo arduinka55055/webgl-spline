@@ -251,6 +251,15 @@ initShader().then(() => requestAnimationFrame(redraw));
 
 
 //#region events
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector('#clear').addEventListener('click', () => {
+        spline.splice(0, spline.length);
+        spline.push(new Point(0.4, 0.5));
+        spline.push(new Point(0.5, 0.6));
+        spline.push(new Point(0.6, 0.4));
+        spline.push(new Point(0.7, 0.4));
+    });
+});
 canvas.addEventListener('mousemove', (e) => {
     cursor.x = e.offsetX;
     cursor.y = e.offsetY;
